@@ -1,0 +1,174 @@
+
+
+solidity 是一种静态类型语言，意味着每个变量(本地或状态变量)需要在编译时指定变量的类型。solidy提供了一些基本类型可以用来组合复杂类型。
+
+ solidity类型分为两类:
+    值类型(value type)  变量在赋值或传参时，总是进行值拷贝。
+    引用类型(reference types)
+    
+    值类型包含: 
+      布尔类型、整型、定长浮点型、定长字节数组、有理数和整型常量、字符串常量、十六进制常量
+      枚举、函数、地址、地址常量
+       
+     布尔类型 
+     
+      布尔bool : 可能的取值为常量值true和false
+      
+      布尔类型支持的运算符有: 
+         ! 逻辑非    && 逻辑与  || 逻辑或 == 等于 !=不等于
+       
+    整型(Integers)
+      
+        int/uint: 表示符号和无符号不同位数整数。支持关键字uint8 到 uint256 （以8步进）
+         uint 和 int 默认对应的是uint256 和 int256
+        
+      支持的运算符
+        
+        比较运算符 : <= < == != >= > 
+        位操作符 : & | ^(异或) ~(位取反)
+        算术操作符: +　－　
+        
+        说明
+          １　整数除法总是截断的，但是如果运算符是字面量　，则不会截断。
+          ２　整数除０会抛异常。
+          ３　移位运算的结果的正负取决于操作符左边的数。
+          4  不能进行负移位，即操作符右边的数不可以为负数，否则会抛出运行时异常。
+          
+          注意  solidity中，右移位是和除等价的，因此右移位一个负数，向下取整时会为0，而不像其他语言里为无限负小数
+          
+          
+       定长浮点型  
+          用来声明变量，但不可以用来赋值。
+          fixed/ufixed 表示有符号和无符号的固定位浮点数。关键字为ufixedMxN和ufixedMxN。
+          M表示这个类型要占用的位数，以8步进，可为8到256位。
+          N表示小数点的个数，可为0到80之前。
+          
+          支持的运算符: 
+             比较运算符 : <=  < == != >= >  返回布尔值 true false
+             算术操作符 : + -  一元运算 -  一元运算 + , * / % 
+             注意 : 定长浮点型 和 大多数语言的float 和double 不一样， M是表示 整个数占用的固定位数，包含整数部分和小数部分。
+                    因此用一个小位数(M较小)来表示一个浮点数时，小数部分会几乎占用整个空间。
+                    
+      定长字节数组  fixed size byte arrays
+      
+      关键字有 bytes1 , byte2, byte3 .... bytes32  以步长1递增。
+      byte 代表 bytes1
+          
+          比较符: <=  < == != >= > 返回bool
+          位操作符: &, |  ^(按位异或) ~ 按位取反 <<  左移位  >> 右移位
+          索引(下标) 访问 : 如果x是byte1 ,当0 <= k < 1  则x[k] 返回第k个字节(只读)
+          
+       移位运算和整数类似，移位运算的结果的正负取决于操作符左边的数， 且不能进行负移位。
+       
+       成员变量:  .length  表示这个字节数组的长度 (只读)
+       
+       变长(动态分配大小) 字节数组 (Dynamically -size byte array)
+       
+       bytes : 动态分配大小字节数组， 不是值类型。
+       
+       string : 动态 分配大小UTF-8 编码的字符类型，不是值类型。
+       根据经验：
+            bytes用来存储任意长度的字节数据，string用来存储任意长度的(UTF-8编码)的字符串数据。
+            如果长度可以确定，尽量使用定长的如byte1到byte32中的一个，因为这样更省空间。
+    
+    有理数和整型常量(字面量)
+          
+          整型常量是有一系列0-9 的数字组成，10进制表示，比如  8 进制是不存在，前置0在solidity中是无效的。
+          10进制小数常量带了一个. , 在 .  的两边至少有一个数字， 有效的表示如 1. , .1 , 1.3
+          
+          科学符号也支持，基数可以是小数，指数必须是整数 ， 有效的表示如 2e10, -2e10
+          
+          
+          注意 
+              solidity对每一个有理数都有一个数值常量类型。整数常量和有理数常量从属于数字常量。所有的数字常量表达式的结果都属于数字常量。
+                所以1 + 2 和 2+1都属于同样的有理数的数字常量3
+                
+         警告:
+             整数常量除法，在早期的版本中是被截断的，但现在可以被转为有理数了，如 5/2的值为2.5
+             
+             
+     字符串常量
+     
+         字符串常量是指由单引号，或双引号引起来的字符串。
+        
+     十六进制常量 
+         以关键字hex打头，后面紧跟用单或双引号包裹的字符串，内容是十六进制字符串 如 hex"001122ff"
+         它的值会用二进制来表示。
+         
+         
+         十六进制常量和字符串常量类似，也可以转换为字节数组。
+         
+     枚举 
+     
+        在solidity中，枚举可以用来自定义类型。它可以显示的转换与整数进行转换，但不能进行隐试转换。显示的转换会在运行时检查数值范围，如果不匹配
+          将会引起异常。枚举类型应至少有一名成员。
+          
+          例子:
+            
+          
+            pragma solidity ^0.4.0
+            contract testEnum {
+                enum ActionChoices {GoLeft, GoRight, GoStraight, SitStill }
+                ActionChoices choice;
+                //常量
+                ActionChoices constant defaultChoice = ActionChoices.GoStraight;
+                
+                function setGoStraight() {
+                   choice = ActionChoices.GoStraight;
+                }
+                
+                function getChoice() returns (ActionChoices) {
+                    return choice;
+                }
+                
+                function getDefaultChoice() returns (uint) {
+                  return uint(defaultChoice);
+                }
+                
+            }
+          
+          
+          pragma solidity ^0.4.18
+          
+          contract testType {
+          
+               function add(uint x, uint y) public returns (uint z)  {
+                  z = x + y;
+               }
+               
+               function divide(uint x, uint y) public returns (uint z) {
+                  z = x / y;
+               }
+               
+               function leftshift(int x, int y) public returns (int z) {
+                  z = x << y;
+               }
+               
+               function rightshift(int x, uint y) public returns (int z) {
+                  z = x >> y;
+               }
+               
+               function interLiteral() public returns (uint, uint) {
+                  return ((2**800 + 1) - 2**800, 0.5*8);
+               }
+               
+               function hexLiteralBytes() public returns (bytes2, bytes1, bytes2) {
+                   bytes2 a = hex"aabb";
+                   return (a, a[0], a[1]);
+               }
+               
+               
+          }
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
